@@ -21,7 +21,7 @@ rounded(2.42,1.82,1.81,.22,lightpink,0,1.21,.03);
 rounded(2.1,.92,1.75,.36,pink,0,2.95,0);
 rounded(2.04,.68,1.72,.3,cream,0,3.03,.01);
 rounded(2.35,1.82,1.58,.4,glass,0,4.02,-.72);
-rounded(2.18,1.65,.055,.22,new THREE.MeshPhysicalMaterial({color:'#ffffff',transparent:true,opacity:.11,roughness:.04,metalness:0,depthWrite:false,side:THREE.DoubleSide}),0,4.05,.91);
+rounded(2.18,1.65,.055,.22,new THREE.MeshPhysicalMaterial({color:'#ffffff',transparent:true,opacity:.045,roughness:.04,metalness:0,depthWrite:false,side:THREE.DoubleSide}),0,4.05,.91);
 rounded(2.2,.26,1.8,.12,pink,0,4.93,0);
 const capsules=[],capsuleColors=['#ff86ad','#91c9ed','#f7c76c','#a6dcc5','#bca1ef','#ffa89d'];
 const capsuleMat=c=>new THREE.MeshPhysicalMaterial({color:c,roughness:.18,metalness:0,clearcoat:1,clearcoatRoughness:.1});
@@ -34,7 +34,7 @@ const bottom=new THREE.Mesh(new THREE.SphereGeometry(r,32,20,0,Math.PI*2,Math.PI
 const seam=new THREE.Mesh(new THREE.TorusGeometry(r,.009,8,40),new THREE.MeshStandardMaterial({color:'#fff8fc',roughness:.18,transparent:true,opacity:.65}));seam.rotation.x=Math.PI/2;
 const highlight=new THREE.Mesh(new THREE.SphereGeometry(r*.91,20,12,0,Math.PI*.7,Math.PI*.13,Math.PI*.27),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.09,depthWrite:false,side:THREE.DoubleSide}));highlight.rotation.z=.35;
 group.add(bottom,top,seam,highlight);group.userData={vx:0,vy:0,vz:0,seed:i*1.7};scene.add(group);return group}
-const TOTAL=72, R=.19, DIAM=.38;
+const TOTAL=54, R=.19, DIAM=.38;
 function refill(){for(let i=0;i<TOTAL;i++){let c=makeCapsule(i),layer=Math.floor(i/18),j=i%18,row=Math.floor(j/6),col=j%6;
 c.position.set((col-2.5)*.325+(row%2)*.055,3.39+layer*.335+row*.012,.20+row*.275);
 c.rotation.set(i*.37,i*.29,i*.17);capsules.push(c)}settleCapsules(65)}
@@ -80,17 +80,17 @@ renderer.domElement.addEventListener('pointermove',e=>{if(drag==='coin'){coords(
 renderer.domElement.addEventListener('pointerup',()=>{if(drag==='coin'){coin.position.set(-1.75,1.75,1.55)}drag=null});renderer.domElement.addEventListener('pointercancel',()=>{drag=null});
 let dispensing=null,dispenseStart=0;
 function spawnDrop(){jiggle(1.4);if(!capsules.length){setState('open');$('title').textContent='캡슐 품절!';$('message').textContent='모든 캡슐을 뽑았어. 처음부터 버튼을 눌러 채워 줘!';$('letter').classList.add('open');return}
-dispensing=capsules.splice(Math.floor(Math.random()*Math.min(12,capsules.length)),1)[0];dispensing.userData.vx=dispensing.userData.vy=dispensing.userData.vz=0;dispenseStart=performance.now();drop=dispensing;dropT=0;
+let frontIndex=0;for(let i=1;i<capsules.length;i++){const a=capsules[i],b=capsules[frontIndex];if(a.position.z>b.position.z+.025||(Math.abs(a.position.z-b.position.z)<.025&&a.position.y<b.position.y))frontIndex=i}dispensing=capsules.splice(frontIndex,1)[0];dispensing.userData.vx=dispensing.userData.vy=dispensing.userData.vz=0;dispenseStart=performance.now();drop=dispensing;dropT=0;
 const x=dispensing.position.x,y=dispensing.position.y,z=dispensing.position.z;
 dispensing.userData.pathStart=new THREE.Vector3(x,y,z);
 setState('fall')}
 function animateDispense(now){if(!dispensing)return;let t=Math.min((now-dispenseStart)/2300,1),c=dispensing,p=c.userData.pathStart;
-if(t<.26){let u=t/.26;c.position.set(THREE.MathUtils.lerp(p.x,0,u),THREE.MathUtils.lerp(p.y,3.2,u),THREE.MathUtils.lerp(p.z,.48,u))}
-else if(t<.57){let u=(t-.26)/.31;c.position.set(.05*Math.sin(u*9),3.2-2.35*u,.65+.56*u)}
+if(t<.26){let u=t/.26;c.position.set(THREE.MathUtils.lerp(p.x,0,u),THREE.MathUtils.lerp(p.y,3.2,u),THREE.MathUtils.lerp(p.z,1.04,u))}
+else if(t<.57){let u=(t-.26)/.31;c.position.set(.05*Math.sin(u*9),3.2-2.35*u,1.04+.18*u)}
 else if(t<.78){let u=(t-.57)/.21;c.position.set(.02,.85-.22*u,1.21+.42*u)}
 else{let u=(t-.78)/.22;c.position.set(.02+.1*u,.63+.22*Math.sin(u*Math.PI),1.63+.26*u)}
-c.rotation.x+=.09;c.rotation.z+=.07;
-if(t>=1){settleCapsules(8);dispensing=null;drop.position.set(.12,.63,1.89);setState('open')}}
+c.rotation.x+=.15;c.rotation.z+=.12;
+if(t>=1){settleCapsules(18);dispensing=null;drop.position.set(.12,.63,1.89);setState('open')}}
 const letters=[['행운의 예감','오늘은 작지만 기분 좋은 일이 기다리고 있어.\n천천히 주변을 둘러봐! 🌷'],['너에게 온 편지','지금의 너도 충분히 멋져.\n오늘 하루는 스스로를 칭찬해 줘. 💌'],['반짝이는 운세','새로운 기회가 슬쩍 인사할지도 몰라.\n용기 있게 손을 흔들어 줘! ✨'],['포근한 위로','모든 걸 완벽하게 해내지 않아도 괜찮아.\n네 속도대로 걸어가면 돼. ☁️'],['기분 좋은 소식','생각지도 못한 순간에 미소 지을 일이 생길 거야. 🍓'],['오늘의 마법','사소한 친절 하나가 누군가의 하루를 바꿀 수 있어. 🧸'],['별빛 편지','조금 멀어 보여도 네 꿈은 여전히 반짝이고 있어. ⭐'],['행운의 색','오늘의 행운 색은 분홍색!\n작은 분홍빛을 찾아봐. 🎀'],['마음의 날씨','잠깐 쉬어도 괜찮아.\n따뜻한 차 한 잔이 행운의 시작이야. 🍵'],['내일의 약속','오늘의 작은 시작이 내일의 큰 웃음이 될 거야. 🌙']];
 function showLetter(){let item=letters[Math.floor(Math.random()*letters.length)];$('title').textContent=item[0];$('message').textContent=item[1];$('letter').classList.add('open')}
 function reset(){if(capsules.length===0)refill();state='coin';coin.visible=coinsLeft>0;coin.position.set(-1.75,1.75,1.55);wheel.rotation.z=0;if(drop){scene.remove(drop);drop=null;dispensing=null}$('letter').classList.remove('open');setState('coin');if(coinsLeft===0){$('hint').firstChild.textContent='🪙 동전을 모두 사용했어! 충전 버튼을 눌러줘.'}}
