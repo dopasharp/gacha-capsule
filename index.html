@@ -25,22 +25,22 @@ rounded(2.18,1.65,.055,.22,new THREE.MeshPhysicalMaterial({color:'#ffffff',trans
 rounded(2.2,.26,1.8,.12,pink,0,4.93,0);
 const capsules=[],capsuleColors=['#ff86ad','#91c9ed','#f7c76c','#a6dcc5','#bca1ef','#ffa89d'];
 const capsuleMat=c=>new THREE.MeshPhysicalMaterial({color:c,roughness:.18,metalness:0,clearcoat:1,clearcoatRoughness:.1});
-function makeCapsule(i){const group=new THREE.Group(),color=capsuleColors[i%capsuleColors.length],r=.17,h=.13;
-const topMat=new THREE.MeshPhysicalMaterial({color:'#fffafc',roughness:.08,transparent:true,opacity:.82,depthWrite:false,clearcoat:1,side:THREE.DoubleSide});
-const bottomMat=capsuleMat(color);
-const upper=new THREE.Mesh(new THREE.SphereGeometry(r,24,12,0,Math.PI*2,0,Math.PI/2),topMat);upper.position.y=h/2;
-const upperBand=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h/2,24),topMat);upperBand.position.y=h/4;
-const lower=new THREE.Mesh(new THREE.SphereGeometry(r,24,12,0,Math.PI*2,Math.PI/2,Math.PI/2),bottomMat);lower.position.y=-h/2;
-const lowerBand=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h/2,24),bottomMat);lowerBand.position.y=-h/4;
-const seam=new THREE.Mesh(new THREE.TorusGeometry(r+.006,.014,8,32),cream);seam.rotation.x=Math.PI/2;
-group.add(upper,upperBand,lower,lowerBand,seam);group.userData={vx:0,vy:0,vz:0,seed:i*1.7};scene.add(group);return group}
+function makeCapsule(i){
+const group=new THREE.Group(),color=capsuleColors[i%capsuleColors.length],r=.19;
+const lowerMat=new THREE.MeshPhysicalMaterial({color,roughness:.13,metalness:0,transparent:true,opacity:.72,clearcoat:1,clearcoatRoughness:.08,side:THREE.DoubleSide,depthWrite:false});
+const upperMat=new THREE.MeshPhysicalMaterial({color:'#ffffff',roughness:.055,metalness:0,transparent:true,opacity:.32,clearcoat:1,clearcoatRoughness:.03,side:THREE.DoubleSide,depthWrite:false});
+const top=new THREE.Mesh(new THREE.SphereGeometry(r,32,20,0,Math.PI*2,0,Math.PI/2),upperMat);
+const bottom=new THREE.Mesh(new THREE.SphereGeometry(r,32,20,0,Math.PI*2,Math.PI/2,Math.PI/2),lowerMat);
+const seam=new THREE.Mesh(new THREE.TorusGeometry(r,.009,8,40),new THREE.MeshStandardMaterial({color:'#fff8fc',roughness:.18,transparent:true,opacity:.65}));seam.rotation.x=Math.PI/2;
+const highlight=new THREE.Mesh(new THREE.SphereGeometry(r*.91,20,12,0,Math.PI*.7,Math.PI*.13,Math.PI*.27),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.09,depthWrite:false,side:THREE.DoubleSide}));highlight.rotation.z=.35;
+group.add(bottom,top,seam,highlight);group.userData={vx:0,vy:0,vz:0,seed:i*1.7};scene.add(group);return group}
 const TOTAL=35;
 function refill(){for(let i=0;i<TOTAL;i++){let c=makeCapsule(i);let layer=Math.floor(i/12),index=i%12;let x=(index%4-1.5)*.42+(Math.random()-.5)*.03;let y=3.38+layer*.37+(Math.floor(index/4))*.34;let z=.25+(index%3)*.25;c.position.set(x,y,z);c.rotation.set(i*.73,i*.42,i*.51);capsules.push(c)}}
 refill();
 let shakePower=0,shakeTime=0;
 function jiggle(strength){shakePower=Math.max(shakePower,strength);shakeTime=performance.now()/1000;for(let c of capsules){c.userData.vx+=(Math.random()-.5)*strength*.1;c.userData.vy+=Math.random()*strength*.1;c.userData.vz+=(Math.random()-.5)*strength*.04}}
 function updateCapsules(dt){shakePower*=.965;for(let c of capsules){let v=c.userData;v.vy-=dt*.9;v.vx+=Math.sin(performance.now()*.001*5+v.seed)*shakePower*.001;v.vx*=.965;v.vy*=.94;v.vz*=.96;c.position.x+=v.vx;c.position.y+=v.vy;c.position.z+=v.vz;const minY=3.38,maxY=4.62;if(c.position.y<minY){c.position.y=minY;v.vy=Math.abs(v.vy)*.47}if(c.position.y>maxY){c.position.y=maxY;v.vy=-Math.abs(v.vy)*.5}if(c.position.x> .83){c.position.x=.83;v.vx=-Math.abs(v.vx)*.7}if(c.position.x<-.83){c.position.x=-.83;v.vx=Math.abs(v.vx)*.7}c.position.z=THREE.MathUtils.clamp(c.position.z,.26,.7);c.rotation.x+=v.vy*.04;c.rotation.z+=v.vx*.06}
-for(let i=0;i<capsules.length;i++)for(let j=i+1;j<capsules.length;j++){let a=capsules[i],b=capsules[j],d=a.position.distanceTo(b.position);if(d>.001&&d<.37){let push=a.position.clone().sub(b.position).multiplyScalar((.37-d)/d*.13);a.position.add(push);b.position.sub(push);a.userData.vy+=push.y*.15;b.userData.vy-=push.y*.15}}}
+for(let i=0;i<capsules.length;i++)for(let j=i+1;j<capsules.length;j++){let a=capsules[i],b=capsules[j],d=a.position.distanceTo(b.position);if(d>.001&&d<.39){let push=a.position.clone().sub(b.position).multiplyScalar((.39-d)/d*.13);a.position.add(push);b.position.sub(push);a.userData.vy+=push.y*.15;b.userData.vy-=push.y*.15}}}
 rounded(.65,.12,.12,.04,dark,-.66,1.76,.99);
 rounded(.5,.025,.13,.015,mat('#4e2b41',.2),-.66,1.79,1.065);
 const wheel=new THREE.Group();wheel.position.set(.62,1.69,1.01);scene.add(wheel);
